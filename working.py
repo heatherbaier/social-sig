@@ -34,50 +34,67 @@ X = mMScale.fit_transform(X)
 
 
 ####### Build and fit the Model
-outDim = 10
-model = socialSig.SocialSigNet(X=X, outDim = outDim)
-lr = 1e-6
-batchSize = 10
+lr = 1e-7
+batchSize = 200
+model = socialSig.SocialSigNet(X=X, outDim = batchSize)
+
 
 
 criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr = lr)
 
 
-for t in range(50):
-    #Batches
+for t in range(25):
+
+    # Prep the batch for a forward pass
     # batchObs = random.sample(range(0, len(y)), batchSize)
     batchObs = [i for i in range(0, batchSize)]
     modelX = X[batchObs]
-    # print(modelX.shape)
     modelX = torch.tensor(list(modelX), requires_grad = True, dtype = torch.float32)
-    modely = torch.tensor(y[batchObs], dtype = torch.float32)  # MADE A CHANGE HERE 
-    
-    
+    modely = torch.tensor(y[batchObs], dtype = torch.float32)
 
-
-    print("EPOCH: ", t)
+    # Forward pass
     y_pred = model(modelX, t)
-    # print(y_pred)
     loss = criterion(y_pred, modely)  
-    # print()  
-    print("    Loss:     ", loss.item(), "     MAE: ", mae(y_pred, modely).item())
     
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()
     grad = torch.autograd.grad(outputs=loss, inputs=modelX, retain_graph = True)
-    # print("    GRADIENT: ", grad[0][0].shape)
-    # print("    GRADIENT: ", grad[0])
     loss.backward()
     optimizer.step()
+
+    # Update the coordinate weights
     # https://discuss.pytorch.org/t/updatation-of-parameters-without-using-optimizer-step/34244/4
     with torch.no_grad():
         for name, p in model.named_parameters():
             if name == 'SocialSig.W':
-            # print("    In with:        ", p.data)
                 new_val = update_function(p, grad[0], loss, lr)
-            # print("NEW WEIGHTS: ", new_val)
                 p.copy_(new_val)
     
+
+    print("EPOCH: ", t)
+    print("    Loss:     ", loss.item(), "     MAE: ", mae(y_pred, modely).item())
     print("\n")
 
+    if loss.item() < 0:
+        break
+
+
+
+
+
+def get_final_columns(new_val, devSet):
+    print("\n")
+    indices = list(torch.clamp(torch.tensor(new_val, dtype = torch.int64), 0, len(new_val)).detach().numpy())
+    print("Columns kept: ", list(devSet.columns[list(set(indices))]))
+    droppped_indices = [i for i in range(0, len(devSet.columns)) if i not in indices]
+    print("\n")
+    print("Columns dropped: ", list(devSet.columns[droppped_indices]))
+    print("\n")
+    # print(indices)
+    dup_indicies = list(set([i for i in indices if indices.count(i)>1]))
+    print("Duplicated columns: ", list(devSet.columns[dup_indicies]))
+    print("\n")
+
+
+get_final_columns(new_val, devSet.loc[:, devSet.columns != "US_MIG_05_10"])

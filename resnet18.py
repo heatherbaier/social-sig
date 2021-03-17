@@ -10,42 +10,16 @@ import math
 
 from helpers import *
 
-# import socialSig
-# importlib.reload(socialSig)
-
-class bilinearImputation(torch.nn.Module):
-    '''
-    Class to create the social signature image
-    '''
-    def __init__(self, X):
-        super(bilinearImputation, self).__init__()
-        self.W = torch.nn.Parameter(torch.tensor(np.arange(0, X.shape[1]), dtype = torch.float32, requires_grad=True))
-        # self.outDim = [10,10]
-        self.outDim = [224,224]
-        self.inDim = math.ceil(math.sqrt(X.shape[1]))
-
-    def forward(self, batchX):
-        # print("    W at beginning: ", torch.tensor(self.W, dtype = torch.int)) 
-        taken = torch.take(batchX, construct_indices(torch.clamp(torch.tensor(self.W, dtype = torch.int64), 0, 29), batchX.shape[0], self.W.shape[0]))
-        batchX.data = batchX.data.copy_(taken.data)        
-        inDataSize = self.W.shape[0] #Data we have per dimension
-        targetSize = self.inDim ** 2
-        paddingOffset = targetSize - inDataSize
-        paddedInX = torch.nn.functional.pad(input=batchX, pad=(0,paddingOffset), mode="constant", value=0)
-        buildImage = torch.reshape(paddedInX,(batchX.shape[0], 1, self.inDim, self.inDim))   
-        return torch.nn.functional.interpolate(buildImage, size=([self.outDim[0], self.outDim[1]]), mode='bilinear')
-
-
 
 ###### Define our model
-class SocialSigNet(torch.nn.Module):
+class resnet18(torch.nn.Module):
     '''
     SocialSigNet
     Mocks the ResNet18 architecture
     '''
-    def __init__(self, X, outDim):
+    def __init__(self, outDim):
         super().__init__()
-        self.SocialSig = bilinearImputation(X=X)                
+        # self.SocialSig = bilinearImputation(X=X)                
         self.conv2d = torch.nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.bn1 = torch.nn.BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
         self.relu = torch.nn.ReLU(inplace=True)
@@ -122,19 +96,18 @@ class SocialSigNet(torch.nn.Module):
 
         # 512*outDim
         # self.linear = torch.nn.Linear(512*outDim, outDim)
-        self.linear = torch.nn.Linear(5017600, outDim)
-        125440
+        self.linear = torch.nn.Linear(2508800, 100)
 
         
     def forward(self, X, epoch):
-        out = self.SocialSig(X) # OUT:  torch.Size([100, 1, 10, 10])
+        # out = self.SocialSig(X) # OUT:  torch.Size([100, 1, 10, 10])
         
         # print('Imputed s512*uccessfully')
         # print(out.shape)
 
-        pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs2/im" + str(epoch) + ".csv")
+        # pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs2/im" + str(epoch) + ".csv")
 
-        out = self.conv2d(out)
+        out = self.conv2d(X)
         out = self.bn1(out)
         out = self.relu(out)
         out = self.maxPool(out)
@@ -143,6 +116,6 @@ class SocialSigNet(torch.nn.Module):
         out = self.seqBlock3(out)
         out = self.seqBlock4(out)
         out = self.relu(out)
-        out = out.flatten()
+        out = out.flatten()        
         out = self.linear(out)
         return out
