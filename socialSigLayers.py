@@ -75,7 +75,7 @@ class bilinearImputation(torch.nn.Module):
 
     def forward(self, batchX):
         
-        # print("    W at beginning: ", torch.tensor(self.W, dtype = torch.int)) 
+        print("    W at beginning: ", torch.tensor(self.W, dtype = torch.int)) 
 
         # taken = torch.take(batchX, construct_indices(self.W, batchX.shape[0], self.W.shape[0]))
         taken = torch.take(batchX, construct_indices(torch.clamp(torch.tensor(self.W, dtype = torch.int64), 0, 29), batchX.shape[0], self.W.shape[0]))
@@ -93,7 +93,48 @@ class bilinearImputation(torch.nn.Module):
 
 
 
-    ###### Define our model
+# class bilinearImputation(torch.nn.Module):
+#     '''
+#     Class to create the social signature image
+#     '''
+#     def __init__(self, X):
+#         super(bilinearImputation, self).__init__()
+#         self.W = torch.nn.Parameter(torch.tensor(np.arange(0,X.shape[1]), dtype = torch.float32, requires_grad=True))
+#         self.outDim = [10,10]
+#         self.inDim = math.ceil(math.sqrt(X.shape[1]))
+
+#     def forward(self, batchX):
+        
+#         # print("    W at beginning: ", torch.tensor(self.W, dtype = torch.int)) 
+
+#         self.X = batchX
+#         # xTemp = torch.stack([self.X, self.W.clone().repeat(self.X.shape[0],1).data])
+
+#         # print(self.W.shape)
+
+#         print(construct_indices(self.W, self.X.shape[0], self.W.shape[0]))
+
+#         # print("    TAKE: ", torch.take(self.X, construct_indices(self.W, self.X.shape[0], self.W.shape[0])))
+#         taken = torch.take(self.X, construct_indices(self.W, self.X.shape[0], self.W.shape[0]))
+        
+#         # XSort, indices = torch.sort(xTemp, dim=1, descending=False)
+
+#         # print("self.X.data: ", self.X.data.copy_(taken.data)) 
+
+#         # print("    XSort: ", XSort[0].shape)
+
+#         self.X.data = self.X.data.copy_(taken.data)
+#         # print("self.X.data: ", self.X.data.copy_(taken.data))       
+        
+#         inDataSize = self.W.shape[0] #Data we have per dimension
+#         targetSize = self.inDim ** 2
+#         paddingOffset = targetSize - inDataSize
+#         paddedInX = torch.nn.functional.pad(input=self.X, pad=(0,paddingOffset), mode="constant", value=0)
+#         buildImage = torch.reshape(paddedInX,(self.X.shape[0], 1, self.inDim, self.inDim))   
+#         return torch.nn.functional.interpolate(buildImage, size=([self.outDim[0], self.outDim[1]]), mode='bilinear')
+
+
+###### Define our model
 class SocialSigNet(torch.nn.Module):
     def __init__(self, X):
         super().__init__()
@@ -171,15 +212,14 @@ class SocialSigNet(torch.nn.Module):
         )
 
         self.seqBlock4 = torch.nn.Sequential(self.block6, self.block7)
-        self.ls = torch.nn.LogSigmoid()
 
-        # self.linear = torch.nn.Linear(2560, 5)
+        self.linear = torch.nn.Linear(2560, 5)
 
         
     def forward(self, X, epoch):
         out = self.SocialSig(X) # OUT:  torch.Size([100, 1, 10, 10])
 
-        pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs/im" + str(epoch) + ".csv")
+        # pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs/im" + str(epoch) + ".csv")
 
         out = self.conv2d(out)
         out = self.bn1(out)
@@ -192,14 +232,9 @@ class SocialSigNet(torch.nn.Module):
         out = self.relu(out)
         out = out.flatten()
 
-        # print("OUT: ", out.shape)
-        # print("X: ", X.shape)
-
-        #  out = self.relu(out)
-
         self.linear = torch.nn.Linear(out.shape[0], X.shape[0])
         out = self.linear(out)
-       
-        
+
+        # print("OUT: ", out.shape)
         # print("OUT: ", out)
         return out

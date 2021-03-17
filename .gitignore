@@ -1,3 +1,11 @@
-figs
-pics
 animation.ipynb
+pics*
+figs*
+models
+SocialSigNet*
+firstExample - WithGrad - WithChanges copy 2.ipynb
+firstExample - WithGrad - WithChanges copy.ipynb
+
+__pycache__
+.ipynb_checkpoints
+.vscode
