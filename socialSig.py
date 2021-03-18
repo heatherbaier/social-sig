@@ -19,7 +19,7 @@ class bilinearImputation(torch.nn.Module):
     '''
     def __init__(self, X):
         super(bilinearImputation, self).__init__()
-        self.W = torch.nn.Parameter(torch.tensor(np.arange(0, X.shape[1]), dtype = torch.float32, requires_grad=True))
+        self.W = torch.nn.Parameter(torch.tensor(np.random.rand(X.shape[1])*.0001, dtype = torch.float32, requires_grad=True))
         # self.outDim = [10,10]
         self.outDim = [224,224]
         self.inDim = math.ceil(math.sqrt(X.shape[1]))
@@ -36,6 +36,27 @@ class bilinearImputation(torch.nn.Module):
         return torch.nn.functional.interpolate(buildImage, size=([self.outDim[0], self.outDim[1]]), mode='bilinear')
 
 
+class bilinearImputationNoDrop(torch.nn.Module):
+    '''
+    Class to create the social signature image
+    '''
+    def __init__(self, X):
+        super(bilinearImputationNoDrop, self).__init__()
+        self.W = torch.nn.Parameter(torch.tensor(np.random.rand(X.shape[1])*.0001, dtype = torch.float32, requires_grad=True))
+        # self.outDim = [10,10]
+        self.outDim = [224,224]
+        self.inDim = math.ceil(math.sqrt(X.shape[1]))
+
+    def forward(self, batchX):
+        # print("    W at beginning: ", torch.tensor(self.W, dtype = torch.int)) 
+        taken = torch.take(batchX, construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0]))
+        batchX.data = batchX.data.copy_(taken.data)        
+        inDataSize = self.W.shape[0] #Data we have per dimension
+        targetSize = self.inDim ** 2
+        paddingOffset = targetSize - inDataSize
+        paddedInX = torch.nn.functional.pad(input=batchX, pad=(0,paddingOffset), mode="constant", value=0)
+        buildImage = torch.reshape(paddedInX,(batchX.shape[0], 1, self.inDim, self.inDim))   
+        return torch.nn.functional.interpolate(buildImage, size=([self.outDim[0], self.outDim[1]]), mode='bilinear')
 
 ###### Define our model
 class SocialSigNet(torch.nn.Module):
@@ -45,7 +66,7 @@ class SocialSigNet(torch.nn.Module):
     '''
     def __init__(self, X, outDim):
         super().__init__()
-        self.SocialSig = bilinearImputation(X=X)                
+        self.SocialSig = bilinearImputationNoDrop(X=X)                
         self.conv2d = torch.nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.bn1 = torch.nn.BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
         self.relu = torch.nn.ReLU(inplace=True)

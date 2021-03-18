@@ -44,7 +44,7 @@ criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr = lr)
 
 
-for t in range(25):
+for t in range(30):
 
     # Prep the batch for a forward pass
     # batchObs = random.sample(range(0, len(y)), batchSize)
