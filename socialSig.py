@@ -19,7 +19,7 @@ class bilinearImputation(torch.nn.Module):
     '''
     def __init__(self, X):
         super(bilinearImputation, self).__init__()
-        self.W = torch.nn.Parameter(torch.tensor(np.random.rand(X.shape[1])*.0001, dtype = torch.float32, requires_grad=True))
+        self.W = torch.nn.Parameter(torch.tensor(np.arange(0, X.shape[1]), dtype = torch.float32, requires_grad=True))
         # self.outDim = [10,10]
         self.outDim = [224,224]
         self.inDim = math.ceil(math.sqrt(X.shape[1]))
