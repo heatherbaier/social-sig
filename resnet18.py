@@ -96,7 +96,7 @@ class resnet18(torch.nn.Module):
 
         # 512*outDim
         # self.linear = torch.nn.Linear(512*outDim, outDim)
-        self.linear = torch.nn.Linear(2508800, 100)
+        self.linear = torch.nn.Linear(627200, 25)
 
         
     def forward(self, X, epoch):

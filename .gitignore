@@ -6,7 +6,9 @@ models
 SocialSigNet*
 firstExample - WithGrad - WithChanges copy 2.ipynb
 firstExample - WithGrad - WithChanges copy.ipynb
+resnsetWorking copy.ipynb
 createFootprints.ipynb
+nn_rf_dt.ipynb
 
 __pycache__
 .ipynb_checkpoints
