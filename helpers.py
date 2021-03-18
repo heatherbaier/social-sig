@@ -59,3 +59,36 @@ def show_image(best_epoch):
     df = pd.read_csv("./figs/im" + str(best_epoch) + ".csv")
     df["0"] = df["0"].str.split("(").str[1].str.split(",").str[0].astype(float)
     plt.imshow(np.reshape(np.array(df["0"]), (10, 10)))
+
+
+
+
+class dataLoader():
+
+    '''
+    DataLoader used in resnetWorking
+    Loads socialSig footprint images as 1D raster arrays for feeding into 1D resnet
+    '''
+
+    def __init__(self, dir, df):
+        self.data = []
+        self.labels = []
+        df = pd.read_csv(df)
+
+        for i in os.listdir(dir):
+            fname = os.path.join(dir, i)
+            im = np.array(rio.open(fname).read(1))
+            im = torch.from_numpy(im)
+            im = torch.reshape(im, (1, 224, 224)).numpy()
+            num_mig = df[df['sending'] == int(fname.split("m")[1].split(".")[0])]['US_MIG_05_10'].to_list()[0]
+
+            self.data.append(im)
+            self.labels.append(num_mig)
+
+    def train_val_split(self, split):
+        train_num = int(len(self.data) * split)
+        train_indices = random.sample(range(0, len(self.data)), train_num)
+        val_indices = [i for i in range(0, len(self.data)) if i not in train_indices]
+        x_train, y_train = [self.data[i] for i in train_indices], [self.labels[i] for i in train_indices]
+        x_val, y_val = [self.data[i] for i in val_indices], [self.labels[i] for i in val_indices]
+        return x_train, y_train, x_val, y_val 

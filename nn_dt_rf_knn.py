@@ -5,6 +5,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from sklearn import preprocessing
+import matplotlib.pyplot as plt
 from sklearn import tree
 import pandas as pd
 import random
@@ -91,22 +92,67 @@ print('MLP R2 ' + str(MLP_R2))
 print("\n")
 
 
-def something(ytruelist, ypredlist):
-    return abs(sum(ytruelist) - sum(ypredlist) / len(ypredlist))
+def allocation_error(ytruelist, ypredlist):
+    return abs((sum(ytruelist) - sum(ypredlist)) / len(ypredlist))
 
 
-DT_HM = something(y_val, DT_regressionFit.predict(x_val))
-KNN_HM = something(y_val, neighFit.predict(x_val))
-RF_HM = something(y_val, RF_regressionFit.predict(x_val))
-MLP_HM = something(y_val, mlp_regrFit.predict(x_val))
+DT_AE = allocation_error(y_val, DT_regressionFit.predict(x_val))
+KNN_AE = allocation_error(y_val, neighFit.predict(x_val))
+RF_AE = allocation_error(y_val, RF_regressionFit.predict(x_val))
+MLP_AE = allocation_error(y_val, mlp_regrFit.predict(x_val))
 
 
-print("METRIC FROM PPT")
-print('Decision Tree HM: ' + str(DT_HM))
-print('KNN HM ' + str(KNN_HM))
-print('RF HM ' + str(RF_HM))
-print('MLP HM ' + str(MLP_HM))
+print("ALLOCATION ERROR")
+print('Decision Tree AE: ' + str(DT_AE))
+print('KNN AE ' + str(KNN_AE))
+print('RF AE ' + str(RF_AE))
+print('MLP AE ' + str(MLP_AE))
 print("\n")
+
+
+def quantity_error(ytruelist, ypredlist): 
+    return abs(sum(ytruelist) - sum(ypredlist))
+
+
+DT_QE = quantity_error(y_val, DT_regressionFit.predict(x_val))
+KNN_QE = quantity_error(y_val, neighFit.predict(x_val))
+RF_QE = quantity_error(y_val, RF_regressionFit.predict(x_val))
+MLP_QE = quantity_error(y_val, mlp_regrFit.predict(x_val))
+
+
+print("QUANTITY ERROR")
+print('Decision Tree QE: ' + str(DT_QE))
+print('KNN QE ' + str(KNN_QE))
+print('RF QE ' + str(RF_QE))
+print('MLP QE ' + str(MLP_QE))
+print("\n")
+
+
+
+## Plots
+plt.scatter(y_val, DT_regressionFit.predict(x_val))
+plt.ylim([0, 4000])
+plt.title("Decision Tree")
+plt.savefig("./model_plots/DT.png")
+plt.clf()
+
+plt.scatter(y_val, RF_regressionFit.predict(x_val))
+plt.ylim([0, 4000])
+plt.title("Random Forest")
+plt.savefig("./model_plots/RF.png")
+plt.clf()
+
+plt.scatter(y_val, neighFit.predict(x_val))
+plt.ylim([0, 4000])
+plt.title("KNN")
+plt.savefig("./model_plots/KNN.png")
+plt.clf()
+
+plt.scatter(y_val, mlp_regrFit.predict(x_val))
+plt.ylim([0, 4000])
+plt.title("MLP")
+plt.savefig("./model_plots/MLP.png")
+plt.clf()
 
 
 
