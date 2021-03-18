@@ -50,3 +50,5 @@ c) socialSig.py: Architecture used to train model for creating socialSigs
 <img src = "./model_plots/KNN.png">
 
 
+#### socialSig
+<img src = "./model_plots/socialSig.png">
