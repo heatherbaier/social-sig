@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from copy import deepcopy
+import rasterio as rio
 import pandas as pd
 import numpy as np
 import importlib
@@ -7,6 +8,7 @@ import sklearn
 import random
 import torch
 import math
+import os
 
 from helpers import *
 
