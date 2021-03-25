@@ -58,7 +58,7 @@ def construct_noOverlap_indices(weights, dim, length):
     '''
     indices = []
     weights = scale_noOverlap(weights.clone().detach().numpy())
-    indices = 200*[[x for _,x in sorted(zip(weights,range(0,dim)))]]
+    indices = dim*[[x for _,x in sorted(zip(weights,range(0,dim)))]]
     for i in range(0,len(indices)):
         indices[i] = [x+(i*length) for x in indices[i]]
     return torch.tensor(indices, dtype = torch.int64)

@@ -34,8 +34,8 @@ X = mMScale.fit_transform(X)
 
 
 ####### Build and fit the Model
-lr = 5e-9
-batchSize = 200
+lr = 1e-9
+batchSize = 500
 model = socialSig.SocialSigNet(X=X, outDim = batchSize)
 epochs = 30
 
