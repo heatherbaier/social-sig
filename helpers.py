@@ -30,6 +30,7 @@ def construct_indices(weights, dim, length):
     '''
     indices = []
     weights = scale(weights.clone().detach().numpy())
+    print(weights.size)
     for i in range(0, dim):
         to_add = i * length
         cur_indices = [i + to_add for i in weights]
@@ -57,12 +58,9 @@ def construct_noOverlap_indices(weights, dim, length):
     '''
     indices = []
     weights = scale_noOverlap(weights.clone().detach().numpy())
-    indices = [x for _,x in sorted(zip(weights,range(0,dim)))]
-    print(indices)
-    #for i in range(0, dim):
-    #    to_add = i * length
-    #    cur_indices = [i + to_add for i in weights]
-    #    indices.append(cur_indices)
+    indices = 200*[[x for _,x in sorted(zip(weights,range(0,dim)))]]
+    for i in range(0,len(indices)):
+        indices[i] = [x+(i*length) for x in indices[i]]
     return torch.tensor(indices, dtype = torch.int64)
 
 def update_function(param, grad, loss, learning_rate):

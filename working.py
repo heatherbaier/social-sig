@@ -34,50 +34,49 @@ X = mMScale.fit_transform(X)
 
 
 ####### Build and fit the Model
-lr = 1e-7
+lr = 5e-9
 batchSize = 200
 model = socialSig.SocialSigNet(X=X, outDim = batchSize)
-
-
+epochs = 30
 
 criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr = lr)
 
 
-for t in range(30):
+for t in range(epochs):
+    for k in range(math.ceil(len(y)/batchSize)):
+        # Prep the batch for a forward pass
+        batchObs = random.sample(range(0, len(y)), batchSize)
+        #batchObs = [i for i in range(0, batchSize)]
+        modelX = X[batchObs]
+        modelX = torch.tensor(list(modelX), requires_grad = True, dtype = torch.float32)
+        modely = torch.tensor(y[batchObs], dtype = torch.float32)
 
-    # Prep the batch for a forward pass
-    # batchObs = random.sample(range(0, len(y)), batchSize)
-    batchObs = [i for i in range(0, batchSize)]
-    modelX = X[batchObs]
-    modelX = torch.tensor(list(modelX), requires_grad = True, dtype = torch.float32)
-    modely = torch.tensor(y[batchObs], dtype = torch.float32)
+        # Forward pass
+        y_pred = model(modelX, t)
+        loss = criterion(y_pred, modely)  
+        
+        # Zero gradients, perform a backward pass, and update the weights.
+        optimizer.zero_grad()
+        grad = torch.autograd.grad(outputs=loss, inputs=modelX, retain_graph = True)
+        loss.backward()
+        optimizer.step()
 
-    # Forward pass
-    y_pred = model(modelX, t)
-    loss = criterion(y_pred, modely)  
-    
-    # Zero gradients, perform a backward pass, and update the weights.
-    optimizer.zero_grad()
-    grad = torch.autograd.grad(outputs=loss, inputs=modelX, retain_graph = True)
-    loss.backward()
-    optimizer.step()
+        # Update the coordinate weights
+        # https://discuss.pytorch.org/t/updatation-of-parameters-without-using-optimizer-step/34244/4
+        with torch.no_grad():
+            for name, p in model.named_parameters():
+                if name == 'SocialSig.W':
+                    new_val = update_function(p, grad[0], loss, lr)
+                    p.copy_(new_val)
+        
 
-    # Update the coordinate weights
-    # https://discuss.pytorch.org/t/updatation-of-parameters-without-using-optimizer-step/34244/4
-    with torch.no_grad():
-        for name, p in model.named_parameters():
-            if name == 'SocialSig.W':
-                new_val = update_function(p, grad[0], loss, lr)
-                p.copy_(new_val)
-    
+        print("Epoch: " + str(t) + " Batch: " + str(k))
+        print("    Loss:     ", loss.item(), "     MAE: ", mae(y_pred, modely).item())
+        print("\n")
 
-    print("EPOCH: ", t)
-    print("    Loss:     ", loss.item(), "     MAE: ", mae(y_pred, modely).item())
-    print("\n")
-
-    if loss.item() < 0:
-        break
+        if loss.item() < 0:
+            break
 
 
 
