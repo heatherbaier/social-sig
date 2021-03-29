@@ -28,6 +28,8 @@ def construct_indices(weights, dim, length):
     adds len(weights) to each index so taken grabs from every batch
     ^^ fix that explanation yo lol
     '''
+    print(dim)
+    print(length)
     indices = []
     weights = scale(weights.clone().detach().numpy())
     print(weights.size)
@@ -58,7 +60,7 @@ def construct_noOverlap_indices(weights, dim, length):
     '''
     indices = []
     weights = scale_noOverlap(weights.clone().detach().numpy())
-    indices = dim*[[x for _,x in sorted(zip(weights,range(0,dim)))]]
+    indices = dim*[[x for _,x in sorted(zip(weights,range(0,length)))]]
     for i in range(0,len(indices)):
         indices[i] = [x+(i*length) for x in indices[i]]
     return torch.tensor(indices, dtype = torch.int64)

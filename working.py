@@ -21,6 +21,8 @@ devSet = pd.read_csv("./us_migration.csv")
 devSet = devSet.loc[:, ~devSet.columns.str.contains('^Unnamed')]
 devSet = devSet.apply(lambda x: pd.to_numeric(x, errors='coerce'))
 devSet = devSet.dropna(axis=1)
+devSet = devSet.drop(['sending'], axis = 1)
+
 
 y = torch.Tensor(devSet['US_MIG_05_10'].values)
 X = devSet.loc[:, devSet.columns != "US_MIG_05_10"].values
@@ -34,13 +36,16 @@ X = mMScale.fit_transform(X)
 
 
 ####### Build and fit the Model
-lr = 1e-9
-batchSize = 500
+lr = 1e-5
+batchSize = 10
 model = socialSig.SocialSigNet(X=X, outDim = batchSize)
 epochs = 30
 
-criterion = torch.nn.MSELoss(reduction='sum')
+criterion = torch.nn.MSELoss(reduction='mean')
 optimizer = torch.optim.SGD(model.parameters(), lr = lr)
+
+
+
 
 
 for t in range(epochs):
@@ -50,7 +55,7 @@ for t in range(epochs):
         #batchObs = [i for i in range(0, batchSize)]
         modelX = X[batchObs]
         modelX = torch.tensor(list(modelX), requires_grad = True, dtype = torch.float32)
-        modely = torch.tensor(y[batchObs], dtype = torch.float32)
+        modely = torch.reshape(torch.tensor(y[batchObs], dtype = torch.float32), (batchSize,1))
 
         # Forward pass
         y_pred = model(modelX, t)
