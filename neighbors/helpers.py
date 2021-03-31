@@ -59,11 +59,11 @@ def construct_noOverlap_indices(weights, dim, length):
     ^^ fix that explanation yo lol
     '''
     indices = []
-    weights = scale_noOverlap(weights.clone().detach().numpy())
+    weights = scale_noOverlap(weights.clone().cpu().detach().numpy())
     indices = dim*[[x for _,x in sorted(zip(weights,range(0,length)))]]
     for i in range(0,len(indices)):
         indices[i] = [x+(i*length) for x in indices[i]]
-    return torch.tensor(indices, dtype = torch.int64)
+    return torch.tensor(indices, dtype = torch.int64).to("cuda:0")
 
 def update_function(param, grad, loss, learning_rate):
     '''
@@ -119,3 +119,58 @@ class dataLoader():
         x_train, y_train = [self.data[i] for i in train_indices], [self.labels[i] for i in train_indices]
         x_val, y_val = [self.data[i] for i in val_indices], [self.labels[i] for i in val_indices]
         return x_train, y_train, x_val, y_val 
+
+
+
+def read_file(shape_id):
+    fname = "./inputs/" + str(shape_id) + ".0.txt"
+    with open(fname, "r") as f:
+        f = f.read()
+
+    to_return = []
+        
+    for i in f.splitlines():
+        splt = i.split(" ")
+        [to_return.append(float(val)) if val not in ['inf', '-inf', 'nan'] else to_return.append(0) for val in splt]
+
+    return to_return
+
+
+def load_data(xy, batch, sending_ids):
+
+    batch = [sending_ids[i] for i in batch]
+    # print("    Batch ID's: ", batch)
+    inputs = [read_file(i) for i in batch]
+    inputs = torch.reshape(torch.tensor(inputs, dtype = torch.float32, requires_grad = True), (len(inputs), 243))
+
+    ys = []
+
+    for i in batch:
+        # print(i)
+        cur = xy[xy['sending'] == int(i)]
+        # print(list(cur['US_MIG_05_10'])[0])
+        ys.append(list(cur['US_MIG_05_10'])[0])
+
+    ys = torch.reshape(torch.tensor(ys, dtype = torch.float32, requires_grad = True), (len(inputs), 1))
+
+    return inputs, ys
+
+
+
+
+def train_test_split(sending_ids, split, xy):
+
+    train_num = int(len(sending_ids) * split)
+    val_num = int(len(sending_ids) - train_num)
+
+    train_indices = random.sample(range(len(sending_ids)), train_num)
+    val_indices = [i for i in range(len(sending_ids)) if i not in train_indices]
+
+    x_train, y_train = load_data(xy, train_indices, sending_ids)
+
+
+    x_val, y_val = load_data(xy, val_indices, sending_ids)
+
+    return x_train, y_train, x_val, y_val
+
+

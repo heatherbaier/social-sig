@@ -59,11 +59,11 @@ def construct_noOverlap_indices(weights, dim, length):
     ^^ fix that explanation yo lol
     '''
     indices = []
-    weights = scale_noOverlap(weights.clone().detach().numpy())
+    weights = scale_noOverlap(weights.clone().cpu().detach().numpy())
     indices = dim*[[x for _,x in sorted(zip(weights,range(0,length)))]]
     for i in range(0,len(indices)):
         indices[i] = [x+(i*length) for x in indices[i]]
-    return torch.tensor(indices, dtype = torch.int64)
+    return torch.tensor(indices, dtype = torch.int64).to("cuda:0")
 
 def update_function(param, grad, loss, learning_rate):
     '''
@@ -119,3 +119,19 @@ class dataLoader():
         x_train, y_train = [self.data[i] for i in train_indices], [self.labels[i] for i in train_indices]
         x_val, y_val = [self.data[i] for i in val_indices], [self.labels[i] for i in val_indices]
         return x_train, y_train, x_val, y_val 
+
+
+
+
+def train_test_split(X, y, split):
+
+    train_num = int(len(X) * split)
+    val_num = int(len(X) - train_num)
+
+    train_indices = random.sample(range(len(X)), train_num)
+    val_indices = [i for i in range(len(X)) if i not in train_indices]
+
+    x_train, x_val = X[train_indices], X[val_indices]
+    y_train, y_val = y[val_indices], y[val_indices]
+
+    return x_train, y_train, x_val, y_val

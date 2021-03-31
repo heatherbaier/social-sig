@@ -164,7 +164,7 @@ class SocialSigNet(torch.nn.Module):
         # print('Imputed s512*uccessfully')
         # print(out.shape)
 
-        pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs2/im" + str(epoch) + ".csv")
+        # pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs2/im" + str(epoch) + ".csv")
         out = self.conv2d(out)
 
         out = self.bn1(out)
