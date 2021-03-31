@@ -52,3 +52,12 @@ c) socialSig.py: Architecture used to train model for creating socialSigs
 
 #### socialSig
 <img src = "./model_plots/socialSig.png">
+
+
+
+
+
+##### Setting up conda env with Jupyter
+conda activate caoe
+conda install -c anaconda ipykernel
+python -m ipykernel install --user --name=caoe
