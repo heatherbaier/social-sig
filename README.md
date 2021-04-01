@@ -78,8 +78,12 @@ c) socialSig.py: Architecture used to train model for creating socialSigs
 <img src = "./model_plots/KNN.png">
 
 
-#### socialSig
-<img src = "./model_plots/socialSig.png">
+#### socialSig No Drop
+<img src = "./model_plots/socialSig_NoDrop.png">
+
+
+#### socialSig Value Based Neighbors
+<img src = "./model_plots/socialSigN_VB.png">
 
 
 

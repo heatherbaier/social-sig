@@ -51,7 +51,6 @@ class bilinearImputationNoDrop(torch.nn.Module):
 
     def forward(self, batchX):
         # print("    W at beginning: ", torch.tensor(self.W)) 
-        # print(construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0]))
         taken = torch.take(batchX, construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0])).cuda()
         batchX.data = batchX.data.copy_(taken.data)   
 
