@@ -19,11 +19,11 @@ from helpers import *
 ####### Load our Data
 #y - 'number_moved'
 #x - 'everything else that is or can be represented as a float.'
-devSet = pd.read_csv("../us_migration.csv")
+devSet = pd.read_csv("./us_migration.csv")
 devSet = devSet.loc[:, ~devSet.columns.str.contains('^Unnamed')]
 devSet = devSet.apply(lambda x: pd.to_numeric(x, errors='coerce'))
 devSet = devSet.dropna(axis=1)
-devSet = devSet.drop(['sending'], axis = 1)
+# devSet = devSet.drop(['sending'], axis = 1)
 
 
 y = torch.Tensor(devSet['US_MIG_05_10'].values)
@@ -40,7 +40,7 @@ sending = devSet['sending'].to_list()
 
 # Get the municipality ID's that have available distance data
 avail_sending = []
-for i in os.listdir("./inputs/"):
+for i in os.listdir("./neighbors/inputs/"):
     avail_sending.append(i.split(".")[0])
 
 avail_sending = [i for i in avail_sending if i not in ['nan', '']]
@@ -54,10 +54,10 @@ model = socialSigN.SocialSigNet(X=torch.reshape(torch.tensor(read_file(1001), dt
 
 
 # Read in trained weights
-checkpoint = torch.load("../trained_models/socialSigN_VB_50epochs.torch")
+checkpoint = torch.load("./trained_models/socialSigN_VB_50epochs.torch")
 model.load_state_dict(checkpoint['model_state_dict'])
 
 
 # Evaluate model and save predictions
 eval_df = eval_model(avail_sending, (1,243), device, xy, model)
-eval_df.to_csv("../predictions/socialSigN_VB_preds.csv", index = False)
+eval_df.to_csv("./predictions/socialSigN_VB_preds.csv", index = False)

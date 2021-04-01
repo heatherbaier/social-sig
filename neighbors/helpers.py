@@ -123,7 +123,7 @@ class dataLoader():
 
 
 def read_file(shape_id):
-    fname = "./inputs/" + str(shape_id) + ".0.txt"
+    fname = "./neighbors/inputs/" + str(shape_id) + ".0.txt"
     with open(fname, "r") as f:
         f = f.read()
 

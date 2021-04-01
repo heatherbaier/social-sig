@@ -32,7 +32,7 @@ if __name__ == "__main__":
     ####### Load our Data
     #y - 'number_moved'
     #x - 'everything else that is or can be represented as a float.'
-    devSet = pd.read_csv("../us_migration.csv")
+    devSet = pd.read_csv("./us_migration.csv")
     devSet = devSet.loc[:, ~devSet.columns.str.contains('^Unnamed')]
     devSet = devSet.apply(lambda x: pd.to_numeric(x, errors='coerce'))
     devSet = devSet.dropna(axis=1)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     # Get the municipality ID's that have available distance data
     avail_sending = []
-    for i in os.listdir("./inputs/"):
+    for i in os.listdir("./neighbors/inputs/"):
         avail_sending.append(i.split(".")[0])
 
     avail_sending = [i for i in avail_sending if i not in ['nan', '']]
@@ -87,6 +87,6 @@ if __name__ == "__main__":
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': criterion,
-                }, "../trained_models/socialSigN_VB_50epochs.torch")
+                }, "./trained_models/socialSigN_VB_50epochs.torch")
 
 
