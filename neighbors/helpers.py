@@ -174,3 +174,124 @@ def train_test_split(sending_ids, split, xy):
     return x_train, y_train, x_val, y_val
 
 
+
+
+def train_model(model, train, val, criterion, optimizer, epochs, batchSize, device, lr):
+
+    best_mae = 9000000000000000000
+    best_model_wts = deepcopy(model.state_dict())
+
+
+    for epoch in range(epochs):
+
+        for phase in ['train','val']:
+
+            if phase == 'train':
+
+                c = 1
+                running_train_mae, running_train_loss = 0, 0
+
+                for inputs, output in train:
+
+                    if len(inputs) == batchSize:
+
+                        inputs = inputs.to(device)
+                        output = output.to(device)
+
+                        inputs = torch.tensor(inputs, dtype = torch.float32, requires_grad = True)
+                        output = torch.reshape(torch.tensor(output, dtype = torch.float32, requires_grad = True), (batchSize,1))
+
+                        # Forward pass
+                        y_pred = model(inputs, str(epoch) + str(c))
+                        loss = criterion(y_pred, output)  
+                        
+                        # Zero gradients, perform a backward pass, and update the weights.
+                        optimizer.zero_grad()
+                        grad = torch.autograd.grad(outputs = loss, inputs = inputs, retain_graph = True)
+                        loss.backward()
+                        optimizer.step()
+
+                        # Update the coordinate weights
+                        # https://discuss.pytorch.org/t/updatation-of-parameters-without-using-optimizer-step/34244/4
+                        with torch.no_grad():
+                            for name, p in model.named_parameters():
+                                if name == 'SocialSig.W':
+                                    new_val = update_function(p, grad[0], loss, lr)
+                                    p.copy_(new_val)
+
+                        running_train_mae += mae(y_pred, output).item()
+                        running_train_loss += loss.item()
+                        
+                        c += 1
+
+            if phase == 'val':
+
+                d = 1
+                running_val_mae, running_val_loss,  = 0, 0
+
+                for inputs, output in val:
+
+                    if len(inputs) == batchSize:
+
+                        inputs = inputs.to(device)
+                        output = output.to(device)
+
+                        inputs = torch.tensor(inputs, dtype = torch.float32, requires_grad = True)
+                        output = torch.reshape(torch.tensor(output, dtype = torch.float32, requires_grad = True), (batchSize,1))
+
+                        # Forward pass
+                        y_pred = model(inputs, 1)
+                        loss = criterion(y_pred, output)  
+
+                        running_val_mae += mae(y_pred, output).item()
+                        running_val_loss += loss.item()
+
+                        d += 1
+                        
+                        if mae(y_pred, output).item() < best_mae:
+                            best_mae = mae(y_pred, output).item()
+                            best_model_wts = deepcopy(model.state_dict())
+
+                        
+                        
+        print("Epoch: ", epoch)  
+        print("  Train:")
+        print("    Loss: ", running_train_loss / c)      
+        print("    MAE: ", running_train_mae / c)
+        print("  Val:")
+        print("    Loss: ", running_val_loss / d)      
+        print("    MAE: ", running_val_mae / d)
+        print("\n")
+
+    return best_model_wts
+
+
+
+def eval_model(X, size, device, xy, model):
+
+    preds, ids, true_vals = [], [], []
+
+    # Run each row through the data frame
+    for i in X:
+        true_val = xy[xy['sending'] == int(i)]
+        true_val = list(true_val['US_MIG_05_10'])[0]
+        input = torch.reshape(torch.tensor(read_file(i), dtype = torch.float32), size).to(device)
+        model.eval()
+        pred = model(input, 1).detach().cpu().numpy()[0][0]
+        true_vals.append(true_val)
+        preds.append(pred)
+        ids.append(i)
+
+    # Make data frame
+    df = pd.DataFrame()
+    df['sending_id'] = ids
+    df['true'] = true_vals
+    df['pred'] = preds
+    df['abs_error'] = abs(df['true'] - df['pred'])
+    df['error'] = df['true'] - df['pred']
+
+    return df
+
+
+
+

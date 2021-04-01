@@ -28,7 +28,7 @@ class bilinearImputation(torch.nn.Module):
 
     def forward(self, batchX):
         # print("    W at beginning: ", torch.tensor(self.W, dtype = torch.int)) 
-        taken = torch.take(batchX, construct_indices(torch.clamp(torch.tensor(self.W, dtype = torch.int64), 0, 29), batchX.shape[0], self.W.shape[0]))
+        taken = torch.take(batchX, construct_indices(torch.clamp(torch.tensor(self.W, dtype = torch.int64), 0, 29), batchX.shape[0], self.W.shape[0])).cuda()
         batchX.data = batchX.data.copy_(taken.data)        
         inDataSize = self.W.shape[0] #Data we have per dimension
         targetSize = self.inDim ** 2
@@ -44,7 +44,7 @@ class bilinearImputationNoDrop(torch.nn.Module):
     '''
     def __init__(self, X):
         super(bilinearImputationNoDrop, self).__init__()
-        self.W = torch.nn.Parameter(torch.tensor(np.random.rand(X.shape[1])*.1, dtype = torch.float32, requires_grad=True))
+        self.W = torch.nn.Parameter(torch.tensor(np.arange(0, X.shape[1])*.001, dtype = torch.float32, requires_grad=True))
         # self.outDim = [10,10]
         self.outDim = [224,224]
         self.inDim = math.ceil(math.sqrt(X.shape[1]))
@@ -52,7 +52,7 @@ class bilinearImputationNoDrop(torch.nn.Module):
     def forward(self, batchX):
         # print("    W at beginning: ", torch.tensor(self.W)) 
         # print(construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0]))
-        taken = torch.take(batchX, construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0]).to('cuda:0'))
+        taken = torch.take(batchX, construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0])).cuda()
         batchX.data = batchX.data.copy_(taken.data)   
 
         inDataSize = self.W.shape[0] #Data we have per dimension

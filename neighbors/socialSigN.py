@@ -52,7 +52,6 @@ class bilinearImputationNoDrop(torch.nn.Module):
 
     def forward(self, batchX):
         # print("    W at beginning: ", torch.tensor(self.W)) 
-        # print(construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0]))
         taken = torch.take(batchX, construct_noOverlap_indices(torch.tensor(self.W, dtype = torch.float32), batchX.shape[0], self.W.shape[0]))
         batchX.data = batchX.data.copy_(taken.data)   
 
@@ -157,16 +156,9 @@ class SocialSigNet(torch.nn.Module):
     def forward(self, X, epoch):
         
         out = self.SocialSig(X) # OUT:  torch.Size([100, 1, 10, 10])
-        #print(out.shape)
-        #print(out[0])
-        #print("====")
-        #print(out[1])
-        # print('Imputed s512*uccessfully')
-        # print(out.shape)
 
         # pd.DataFrame(out.clone()[0].flatten()).to_csv("./figs2/im" + str(epoch) + ".csv")
         out = self.conv2d(out)
-
         out = self.bn1(out)
         out = self.relu(out)
         out = self.maxPool(out)

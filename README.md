@@ -17,7 +17,7 @@ The re-organization of the indices in the social signature prior to imputation a
 The orientation of the image is by values. Each 3x3 group of pixels in the input array represents the value of one variable for the target municiaplity and its neighbors.
 
 #### *socialSigNeighbors - space-based*
-The orientation of the image is by s[patial orentation]. The image is made up of 9 nXn matrices that represent the social signatures of the target municipality and its neighboring municipalities. Data is not grouped by value, but instead by it's approximate orientation on a map.
+The orientation of the image is by spatial orentation. The image is made up of 9 nXn matrices that represent the social signatures of the target municipality and its neighboring municipalities. Data is not grouped by value, but instead by it's approximate orientation on a map.
 
 <br>
 
@@ -43,11 +43,17 @@ c) socialSig.py: Architecture used to train model for creating socialSigs
 
 |       Model	    |       MAE	     |          R2	     |  Quantity Error	|  Allocation Error  |
 |-------------------|----------------|-------------------|------------------|--------------------|
-| socialSigNet	    |   215.1286552	 |   -0.1594528512	 |   54721.64644	|    118.960101      |
-| Decision Tree	    |   193.0494624	 |    0.1808922845	 |   34610	        |    74.43010753     |
-| KNN	            |   261.388172	 |    0.03378865814	 |   18915.5	    |    40.67849462     |
-| Random Forest	    |   208.8401289	 |    0.1880718695	 |   2935.635962	|    6.313195617     |
-| Neural Network	|   233.4912048	 |    0.09794770185	 |   3512.248738	|    7.553223093     |
+| Decision Tree	    |   193.0494624	 |   0.1808922845	 |   34610	        |    74.43010753     |
+| KNN	            |   261.388172	 |   0.03378865814	 |   18915.5	    |    40.67849462     |
+| Random Forest	    |   208.8401289	 |   0.1880718695	 |   2935.635962	|    6.313195617     |
+| Neural Network	|   233.4912048	 |   0.09794770185	 |   3512.248738	|    7.553223093     |
+| socialSigNoDrop	|   234.8218462	 |   0.001206344994	 |   188589.0129	|    356667.314      |
+| socialSign - VB	|   233.5089637	 |   0.001516394077	 |   47244.39757	|    480485.8604     |
+
+
+
+
+
 
 <br>
 <br>
