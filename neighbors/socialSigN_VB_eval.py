@@ -11,9 +11,9 @@ import torch
 import math
 import os
 
-import socialSigN
-importlib.reload(socialSigN)
-from helpers import *
+import socialSigN_VB
+importlib.reload(socialSigN_VB)
+from helpersN_VB import *
 
 
 ####### Load our Data

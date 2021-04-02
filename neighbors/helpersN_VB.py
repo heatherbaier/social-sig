@@ -295,3 +295,28 @@ def eval_model(X, size, device, xy, model):
 
 
 
+def get_mins(x, num, cur_id):
+    
+    # Delete the current polygon from the list so we do no include it in our list of closest polgyons, then cast the dict back to a list
+    x_dict = dict(x)
+    del x_dict[cur_id]
+    x = list(x_dict.values())
+    
+    # sort the distances from lowest to highest
+    x_sorted = sorted(x)
+    
+    # If there are more polgyons that are a distance of 0 than the specified number, reutrn ALL of the indices of polygons that have a distance of zero
+    if x.count(0) > num:
+        zeros = x_sorted[0:x.count(0)]
+        x_array = np.array(x)
+        return np.where(x_array == 0)[0]
+    
+    # Otherwise, return the indices of the num closest polygons
+    else:
+        minimums = x_sorted[0:num]
+        x_array = np.array(x)
+        indices = [list(np.where(x_array == i)[0]) for i in minimums]
+        inidces = [item for sublist in indices for item in sublist]
+        res = []
+        [res.append(x) for x in inidces if x not in res]
+        return res
