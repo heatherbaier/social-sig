@@ -1,13 +1,20 @@
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv("../us_migration.csv")
+df = pd.read_csv("../us_migration_allvars.csv")
 df = df.fillna(0)
 df = df.replace(np.nan, 0)
+with open("../vars.txt", "r") as vars_file:
+    vars = vars_file.read()
+cols_list = vars.splitlines()
+cols_list = list(cols_list) + ['sending']
+df = df[cols_list]
 
 
-var_cols = [i for i in df.columns if i not in ['sending', 'US_MIG_05_10']]
-var_cols = var_cols[0:27]
+var_cols = [i for i in df.columns if i not in ['Unnamed: 0', 'sending', 'num_persons_to_us']]
+# var_cols = var_cols[0:219]
+
+print(len(var_cols))
 
 
 for i in var_cols:
@@ -26,7 +33,14 @@ dist_df = dist_df
 
 for i in dist_df.columns:
     dist_df[i] = dist_df[i].map(ref_dict)
-    
+
+
+print(df.head())
+
+print(dist_df.head())
+
+
+# print(hajhsgjkhajh)
 
 
 file_num = 0
@@ -63,8 +77,9 @@ for col, row in dist_df.iterrows():
         tmp = np.hstack([ar_vals[i[0]], ar_vals[i[1]], ar_vals[i[2]]])
         final_dta.append(tmp)
         
-    fname = "./inputs/" + str(row['shapeID']) + ".txt"
-    np.savetxt(fname, np.reshape(np.array(final_dta), (27,9)))
+    fname = "./inputs2/" + str(row['shapeID']) + ".txt"
+    # np.savetxt(fname, np.reshape(np.array(final_dta), (27,9)))
+    np.savetxt(fname, np.reshape(np.array(final_dta), (219,9)))
     
     file_num += 1
     

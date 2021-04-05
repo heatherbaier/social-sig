@@ -8,7 +8,7 @@ import random
 import torch
 import math
 
-from helpers import *
+# from helpers import *
 
 
 def scale(x, out_range=(0, 29)):
@@ -141,7 +141,7 @@ def load_data(xy, batch, sending_ids):
     batch = [sending_ids[i] for i in batch]
     # print("    Batch ID's: ", batch)
     inputs = [read_file(i) for i in batch]
-    inputs = torch.reshape(torch.tensor(inputs, dtype = torch.float32, requires_grad = True), (len(inputs), 243))
+    inputs = torch.reshape(torch.tensor(inputs, dtype = torch.float32, requires_grad = True), (len(inputs), len(inputs[0])))
 
     ys = []
 
@@ -149,7 +149,7 @@ def load_data(xy, batch, sending_ids):
         # print(i)
         cur = xy[xy['sending'] == int(i)]
         # print(list(cur['US_MIG_05_10'])[0])
-        ys.append(list(cur['US_MIG_05_10'])[0])
+        ys.append(list(cur['num_persons_to_us'])[0])
 
     ys = torch.reshape(torch.tensor(ys, dtype = torch.float32, requires_grad = True), (len(inputs), 1))
 

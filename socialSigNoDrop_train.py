@@ -1,3 +1,4 @@
+import torchvision.models as models
 from sklearn import preprocessing
 import matplotlib.pyplot as plt
 from copy import deepcopy
@@ -28,25 +29,34 @@ if __name__ == "__main__":
     ####### Load our Data
     #y - 'number_moved'
     #x - 'everything else that is or can be represented as a float.'
-    devSet = pd.read_csv("./us_migration.csv")
+    devSet = pd.read_csv("./us_migration_allvars.csv")
+    devSet = devSet.fillna(0)
     devSet = devSet.loc[:, ~devSet.columns.str.contains('^Unnamed')]
     devSet = devSet.apply(lambda x: pd.to_numeric(x, errors='coerce'))
     devSet = devSet.dropna(axis=1)
     devSet = devSet.drop(['sending'], axis = 1)
 
-    y = torch.Tensor(devSet['US_MIG_05_10'].values)
-    X = devSet.loc[:, devSet.columns != "US_MIG_05_10"].values
+    print(devSet.head())
+
+    with open("vars.txt", "r") as vars_file:
+        vars = vars_file.read()
+
+    devSet = devSet[vars.splitlines()]
+
+    y = torch.Tensor(devSet['num_persons_to_us'].values)
+    X = devSet.loc[:, devSet.columns != "num_persons_to_us"].values
 
     mMScale = preprocessing.MinMaxScaler()
     X = mMScale.fit_transform(X)
-
 
 
     ####### Build and fit the Model
     lr = 1e-6
     batchSize = int(args.batchSize)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = socialSigNoDrop.SocialSigNet(X=X, outDim = batchSize).to(device)
+    # model = socialSigNoDrop.SocialSigNet(X=X, outDim = batchSize).to(device)
+    resnet50 = models.resnet50(pretrained=True)
+    model = socialSigNoDrop.scoialSigNet_NoDrop(X=X, outDim = batchSize, resnet = resnet50).to(device)
     epochs = int(args.epochs)
     criterion = torch.nn.MSELoss(reduction='sum')
     optimizer = torch.optim.SGD(model.parameters(), lr = lr)

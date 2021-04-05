@@ -7,6 +7,7 @@ from helpersN_VB import *
 df = pd.read_csv("./MEX/mex_distance_matrix.csv")
 df = df.drop(['Unnamed: 0', 'shapeID'], axis = 1)
 
+
 min_list, num, c = [], 8, 0
 
 
